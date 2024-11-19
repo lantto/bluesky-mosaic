@@ -32,20 +32,46 @@ ws.onclose = () => {
     console.log("WebSocket connection closed");
 };
 const mosaic = document.getElementById('mosaic');
+let currentIndex = 0;
+let gridSize = 0;
+
+// Calculate grid size based on viewport
+function calculateGridSize() {
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const columnsCount = Math.floor(viewportWidth / 202); // 200px + 2px gap
+    const rowsCount = Math.floor(viewportHeight / 202);
+    return columnsCount * rowsCount;
+}
+
+// Recalculate grid size when window is resized
+window.addEventListener('resize', () => {
+    gridSize = calculateGridSize();
+});
+
+// Initial calculation
+gridSize = calculateGridSize();
 
 function addImageToMosaic(imageUrl) {
-    const imgContainer = document.createElement('div');
-    imgContainer.className = 'image-container';
-
-    const img = document.createElement('img');
+    const img = new Image();
     img.src = imageUrl;
-    img.alt = 'BlueSky Image';
     
-    // Remove old images if there are too many (optional)
-    if (mosaic.children.length > 50) {
-        mosaic.removeChild(mosaic.lastChild);
-    }
+    img.onload = () => {
+        const imgContainer = document.createElement('div');
+        imgContainer.className = 'image-container';
+        imgContainer.appendChild(img);
 
-    imgContainer.appendChild(img);
-    mosaic.insertBefore(imgContainer, mosaic.firstChild);
+        // If we haven't filled the grid yet, append new container
+        if (mosaic.children.length < gridSize) {
+            mosaic.appendChild(imgContainer);
+        } else {
+            // Replace existing image at current index
+            mosaic.children[currentIndex].replaceWith(imgContainer);
+            currentIndex = (currentIndex + 1) % gridSize;
+        }
+    };
+
+    img.onerror = () => {
+        console.error('Failed to load image:', imageUrl);
+    };
 }

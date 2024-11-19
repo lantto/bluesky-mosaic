@@ -9,14 +9,15 @@
             background-color: #000;
         }
         #mosaic {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 200px);
+            gap: 2px;
+            max-width: 100%;
+            background-color: #000;
         }
         .image-container {
             width: 200px;
             height: 200px;
-            margin: 2px;
             overflow: hidden;
             position: relative;
         }
