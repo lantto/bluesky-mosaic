@@ -58,16 +58,22 @@ function addImageToMosaic(imageUrl) {
     
     img.onload = () => {
         const imgContainer = document.createElement('div');
-        imgContainer.className = 'image-container';
+        imgContainer.className = 'image-container flip-in';
         imgContainer.appendChild(img);
 
         // If we haven't filled the grid yet, append new container
         if (mosaic.children.length < gridSize) {
             mosaic.appendChild(imgContainer);
         } else {
-            // Replace existing image at current index
-            mosaic.children[currentIndex].replaceWith(imgContainer);
-            currentIndex = (currentIndex + 1) % gridSize;
+            // Add flip-out animation to the container being replaced
+            const oldContainer = mosaic.children[currentIndex];
+            oldContainer.classList.add('flip-out');
+            
+            // Wait for the flip-out animation to complete
+            setTimeout(() => {
+                mosaic.children[currentIndex].replaceWith(imgContainer);
+                currentIndex = (currentIndex + 1) % gridSize;
+            }, 300); // Half of the animation duration
         }
     };
 
