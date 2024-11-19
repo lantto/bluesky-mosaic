@@ -19,7 +19,7 @@ ws.onmessage = (event) => {
         const ref = image.image.ref.$link;
         
         // Construct the image URL
-        const imageUrl = `https://cdn.bsky.app/img/feed_fullsize/plain/${did}/${ref}@jpeg`;
+        const imageUrl = `https://cdn.bsky.app/img/feed_thumbnail/plain/${did}/${ref}@jpeg`;
         addImageToMosaic(imageUrl);
     }
 };
