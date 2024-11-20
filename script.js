@@ -22,17 +22,17 @@ function setupWebSocket() {
         
         const json = JSON.parse(event.data);
         
-        // Check if it's a post with an image
         if (json.commit?.record?.$type === "app.bsky.feed.post" && 
             json.commit.record.embed?.$type === "app.bsky.embed.images") {
             
             const did = json.did;
-            const image = json.commit.record.embed.images[0];
-            const ref = image.image.ref.$link;
+            const rkey = json.commit.rkey; // Get the rkey for the post URL
             
-            // Construct the image URL
-            const imageUrl = `https://cdn.bsky.app/img/feed_thumbnail/plain/${did}/${ref}@jpeg`;
-            addImageToMosaic(imageUrl);
+            json.commit.record.embed.images.forEach(image => {
+                const ref = image.image.ref.$link;
+                const imageUrl = `https://cdn.bsky.app/img/feed_thumbnail/plain/${did}/${ref}@jpeg`;
+                addImageToMosaic(imageUrl, did, rkey);
+            });
         }
     };
 
@@ -115,16 +115,15 @@ window.addEventListener('resize', () => {
 // Initial setup
 initializeMosaic();
 
-function addImageToMosaic(imageUrl) {
+function addImageToMosaic(imageUrl, did, rkey) {
     const img = new Image();
     img.src = imageUrl;
+    img.dataset.postUrl = `https://bsky.app/profile/${did}/post/${rkey}`; // Store the URL
     
     img.onload = () => {
         if (isPaused) {
-            // Skip this image entirely if we're paused
             return;
         }
-        
         displayImage(img);
     };
 
@@ -139,7 +138,14 @@ function addImageToMosaic(imageUrl) {
 function displayImage(img) {
     const imgContainer = document.createElement('div');
     imgContainer.className = 'image-container flip-in';
-    imgContainer.appendChild(img);
+    
+    // Create an anchor element
+    const link = document.createElement('a');
+    link.href = img.dataset.postUrl; // We'll set this when creating the image
+    link.target = '_blank'; // Open in new tab
+    link.appendChild(img);
+    
+    imgContainer.appendChild(link);
 
     const oldContainer = mosaic.children[currentIndex];
     oldContainer.classList.add('flip-out');
