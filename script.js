@@ -14,7 +14,7 @@ function setupWebSocket() {
     activeWebSocket = new WebSocket(url);
     
     activeWebSocket.onopen = () => {
-        console.log("Connected to BlueSky WebSocket");
+        console.log("Connected to Bluesky WebSocket");
     };
 
     activeWebSocket.onmessage = (event) => {
