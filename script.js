@@ -47,13 +47,38 @@ function calculateGridSize() {
     return columnsCount * rowsCount;
 }
 
-// Recalculate grid size when window is resized
-window.addEventListener('resize', () => {
+// Initialize the grid with placeholder images
+function initializeMosaic() {
     gridSize = calculateGridSize();
+    
+    // Clear existing content
+    mosaic.innerHTML = '';
+    
+    // Add placeholder images
+    for (let i = 0; i < gridSize; i++) {
+        const imgContainer = document.createElement('div');
+        imgContainer.className = 'image-container';
+        
+        const img = new Image();
+        img.src = 'data:image/svg+xml,' + encodeURIComponent(`
+            <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+                <rect width="100%" height="100%" fill="#000000"/>
+            </svg>
+        `);
+        img.alt = 'Placeholder';
+        
+        imgContainer.appendChild(img);
+        mosaic.appendChild(imgContainer);
+    }
+}
+
+// Recalculate grid size and reinitialize when window is resized
+window.addEventListener('resize', () => {
+    initializeMosaic();
 });
 
-// Initial calculation
-gridSize = calculateGridSize();
+// Initial setup
+initializeMosaic();
 
 function addImageToMosaic(imageUrl) {
     const img = new Image();
@@ -64,23 +89,19 @@ function addImageToMosaic(imageUrl) {
         imgContainer.className = 'image-container flip-in';
         imgContainer.appendChild(img);
 
-        // If we haven't filled the grid yet, append new container
-        if (mosaic.children.length < gridSize) {
-            mosaic.appendChild(imgContainer);
-        } else {
-            // Add flip-out animation to the container being replaced
-            const oldContainer = mosaic.children[currentIndex];
-            oldContainer.classList.add('flip-out');
-            
-            // Wait for the flip-out animation to complete
-            setTimeout(() => {
-                mosaic.children[currentIndex].replaceWith(imgContainer);
-                currentIndex = (currentIndex + 1) % gridSize;
-            }, 300); // Half of the animation duration
-        }
+        // Add flip-out animation to the container being replaced
+        const oldContainer = mosaic.children[currentIndex];
+        oldContainer.classList.add('flip-out');
+        
+        // Wait for the flip-out animation to complete
+        setTimeout(() => {
+            mosaic.children[currentIndex].replaceWith(imgContainer);
+            currentIndex = (currentIndex + 1) % gridSize;
+        }, 300); // Half of the animation duration
     };
 
     img.onerror = () => {
         console.error('Failed to load image:', imageUrl);
+        currentIndex = (currentIndex + 1) % gridSize; // Move to next position even if image fails
     };
 }
