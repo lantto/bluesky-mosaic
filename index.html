@@ -71,37 +71,40 @@
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            gap: min(10px, 2vw);
+            gap: min(15px, 3vw);
             z-index: 1000;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             justify-content: center;
-            width: 90%;
-            max-width: 400px;
+            width: auto;
+            max-width: none;
         }
         
         .button {
-            padding: min(10px, 2vw) min(20px, 4vw);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 25px;
-            background: rgba(0, 0, 0, 0.8);
+            padding: min(12px, 2.5vw) min(24px, 5vw);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 100px;
+            background: rgba(0, 0, 0, 0.85);
             color: white;
             cursor: pointer;
             font-size: clamp(14px, 3vw, 16px);
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             text-decoration: none;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            font-weight: 500;
-            min-width: 120px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            font-weight: 600;
+            white-space: nowrap;
             text-align: center;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            letter-spacing: 0.3px;
+            min-width: 120px;
         }
         
         .button:hover {
-            background: rgba(20, 20, 20, 0.9);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(30, 30, 30, 0.95);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+            border-color: rgba(255, 255, 255, 0.25);
         }
         
         .button:active {
@@ -110,7 +113,8 @@
         }
         
         .button.paused {
-            background: rgba(40, 40, 40, 0.9);
+            background: rgba(50, 50, 50, 0.95);
+            border-color: rgba(255, 255, 255, 0.2);
         }
         
         .button.paused:hover {
@@ -119,13 +123,13 @@
         
         @media (max-width: 600px) {
             .controls {
-                bottom: 10px;
+                bottom: 15px;
+                gap: 10px;
             }
             
             .button {
-                flex: 1;
-                min-width: 100px;
-                padding: 8px 16px;
+                padding: 10px 20px;
+                min-width: auto;
             }
         }
     </style>
