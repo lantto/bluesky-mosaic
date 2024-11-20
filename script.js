@@ -8,6 +8,26 @@ let activeWebSocket = null;
 let imageCounter = 0;
 const IMAGE_LIMIT = 1000;
 
+const ALLOWED_HASHTAGS = new Set(['art', 'digitalart', 'fanart', 'illustration', 'drawing', 'oc', 'photography', 'artist', 'traditionalart', 'blender', 'render', 'c4d', '3d', '3dart', 'procreate', 'sketch', 'artist']);
+
+function hasAllowedHashtag(facets) {
+    if (!facets) return false;
+    
+    for (const facet of facets) {
+        if (!facet.features) continue;
+        
+        for (const feature of facet.features) {
+            if (feature.$type === 'app.bsky.richtext.facet#tag') {
+                const hashtag = feature.tag.toLowerCase();
+                if (ALLOWED_HASHTAGS.has(hashtag)) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 function setupWebSocket() {
     if (activeWebSocket) {
         activeWebSocket.close();
@@ -20,15 +40,20 @@ function setupWebSocket() {
     };
 
     activeWebSocket.onmessage = (event) => {
-        if (isPaused) return; // Skip processing messages if paused
+        if (isPaused) return;
         
         const json = JSON.parse(event.data);
         
         if (json.commit?.record?.$type === "app.bsky.feed.post" && 
             json.commit.record.embed?.$type === "app.bsky.embed.images") {
             
+            const facets = json.commit.record.facets;
+            if (!hasAllowedHashtag(facets)) {
+                return;
+            }
+            
             const did = json.did;
-            const rkey = json.commit.rkey; // Get the rkey for the post URL
+            const rkey = json.commit.rkey;
             
             json.commit.record.embed.images.forEach(image => {
                 const ref = image.image.ref.$link;
