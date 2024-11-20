@@ -5,6 +5,8 @@ const url = "wss://jetstream2.us-east.bsky.network/subscribe?wantedCollections=a
 let isPaused = false;
 const pauseButton = document.getElementById('pauseButton');
 let activeWebSocket = null;
+let imageCounter = 0;
+const IMAGE_LIMIT = 1000;
 
 function setupWebSocket() {
     if (activeWebSocket) {
@@ -58,10 +60,12 @@ pauseButton.addEventListener('click', () => {
     isPaused = !isPaused;
     pauseButton.textContent = isPaused ? 'Resume' : 'Pause';
     pauseButton.classList.toggle('paused');
+    pauseButton.classList.remove('auto-paused');
     
     if (isPaused) {
         activeWebSocket.close();
     } else {
+        imageCounter = 0;
         setupWebSocket();
     }
 });
@@ -136,6 +140,16 @@ function addImageToMosaic(imageUrl, did, rkey) {
 }
 
 function displayImage(img) {
+    imageCounter++;
+    if (imageCounter >= IMAGE_LIMIT && !isPaused) {
+        isPaused = true;
+        pauseButton.textContent = 'Resume';
+        pauseButton.classList.add('paused');
+        pauseButton.classList.add('auto-paused');
+        activeWebSocket.close();
+        return;
+    }
+
     const imgContainer = document.createElement('div');
     imgContainer.className = 'image-container flip-in';
     
