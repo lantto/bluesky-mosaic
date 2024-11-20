@@ -2,35 +2,70 @@
 
 const url = "wss://jetstream2.us-east.bsky.network/subscribe?wantedCollections=app.bsky.feed.post";
 
-const ws = new WebSocket(url);
-ws.onopen = () => {
-    console.log("Connected to BlueSky WebSocket");
-};
+let isPaused = false;
+const pauseButton = document.getElementById('pauseButton');
+let activeWebSocket = null;
 
-ws.onmessage = (event) => {
-    const json = JSON.parse(event.data);
-    
-    // Check if it's a post with an image
-    if (json.commit?.record?.$type === "app.bsky.feed.post" && 
-        json.commit.record.embed?.$type === "app.bsky.embed.images") {
-        
-        const did = json.did;
-        const image = json.commit.record.embed.images[0];
-        const ref = image.image.ref.$link;
-        
-        // Construct the image URL
-        const imageUrl = `https://cdn.bsky.app/img/feed_thumbnail/plain/${did}/${ref}@jpeg`;
-        addImageToMosaic(imageUrl);
+function setupWebSocket() {
+    if (activeWebSocket) {
+        activeWebSocket.close();
     }
-};
+    
+    activeWebSocket = new WebSocket(url);
+    
+    activeWebSocket.onopen = () => {
+        console.log("Connected to BlueSky WebSocket");
+    };
 
-ws.onerror = (error) => {
-    console.error("WebSocket error:", error);
-};
+    activeWebSocket.onmessage = (event) => {
+        if (isPaused) return; // Skip processing messages if paused
+        
+        const json = JSON.parse(event.data);
+        
+        // Check if it's a post with an image
+        if (json.commit?.record?.$type === "app.bsky.feed.post" && 
+            json.commit.record.embed?.$type === "app.bsky.embed.images") {
+            
+            const did = json.did;
+            const image = json.commit.record.embed.images[0];
+            const ref = image.image.ref.$link;
+            
+            // Construct the image URL
+            const imageUrl = `https://cdn.bsky.app/img/feed_thumbnail/plain/${did}/${ref}@jpeg`;
+            addImageToMosaic(imageUrl);
+        }
+    };
 
-ws.onclose = () => {
-    console.log("WebSocket connection closed");
-};
+    activeWebSocket.onerror = (error) => {
+        console.error("WebSocket error:", error);
+    };
+
+    activeWebSocket.onclose = () => {
+        console.log("WebSocket connection closed");
+        if (!isPaused) {
+            // Attempt to reconnect after 5 seconds if not manually paused
+            setTimeout(() => {
+                setupWebSocket();
+            }, 5000);
+        }
+    };
+}
+
+// Initialize the WebSocket connection
+setupWebSocket();
+
+pauseButton.addEventListener('click', () => {
+    isPaused = !isPaused;
+    pauseButton.textContent = isPaused ? 'Resume' : 'Pause';
+    pauseButton.classList.toggle('paused');
+    
+    if (isPaused) {
+        activeWebSocket.close();
+    } else {
+        setupWebSocket();
+    }
+});
+
 const mosaic = document.getElementById('mosaic');
 let currentIndex = 0;
 let gridSize = 0;
@@ -85,23 +120,32 @@ function addImageToMosaic(imageUrl) {
     img.src = imageUrl;
     
     img.onload = () => {
-        const imgContainer = document.createElement('div');
-        imgContainer.className = 'image-container flip-in';
-        imgContainer.appendChild(img);
-
-        // Add flip-out animation to the container being replaced
-        const oldContainer = mosaic.children[currentIndex];
-        oldContainer.classList.add('flip-out');
+        if (isPaused) {
+            // Skip this image entirely if we're paused
+            return;
+        }
         
-        // Wait for the flip-out animation to complete
-        setTimeout(() => {
-            mosaic.children[currentIndex].replaceWith(imgContainer);
-            currentIndex = (currentIndex + 1) % gridSize;
-        }, 300); // Half of the animation duration
+        displayImage(img);
     };
 
     img.onerror = () => {
         console.error('Failed to load image:', imageUrl);
-        currentIndex = (currentIndex + 1) % gridSize; // Move to next position even if image fails
+        if (!isPaused) {
+            currentIndex = (currentIndex + 1) % gridSize;
+        }
     };
+}
+
+function displayImage(img) {
+    const imgContainer = document.createElement('div');
+    imgContainer.className = 'image-container flip-in';
+    imgContainer.appendChild(img);
+
+    const oldContainer = mosaic.children[currentIndex];
+    oldContainer.classList.add('flip-out');
+    
+    setTimeout(() => {
+        mosaic.children[currentIndex].replaceWith(imgContainer);
+        currentIndex = (currentIndex + 1) % gridSize;
+    }, 300);
 }
