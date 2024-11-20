@@ -39,8 +39,11 @@ let gridSize = 0;
 function calculateGridSize() {
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    const columnsCount = Math.floor(viewportWidth / 202); // 200px + 2px gap
-    const rowsCount = Math.floor(viewportHeight / 202);
+    
+    // Calculate how many columns we can fit with a minimum of 3
+    const columnsCount = Math.max(3, Math.floor(viewportWidth / 200));
+    const rowsCount = Math.floor(viewportHeight / (viewportWidth / columnsCount));
+    
     return columnsCount * rowsCount;
 }
 
