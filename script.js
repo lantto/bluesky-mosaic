@@ -11,7 +11,7 @@ const IMAGE_LIMIT = 1000;
 const PRESET_HASHTAGS = {
     'art': new Set(['art', 'digitalart', 'fanart', 'illustration', 'drawing', 'oc', 'photography', 
                     'artist', 'traditionalart', 'blender', 'render', 'c4d', '3d', '3dart', 
-                    'procreate', 'sketch', 'artist'])
+                    'procreate', 'sketch', 'artist', 'pixelart'])
 };
 
 function getUrlParameters() {
