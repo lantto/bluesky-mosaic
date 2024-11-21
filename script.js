@@ -8,9 +8,36 @@ let activeWebSocket = null;
 let imageCounter = 0;
 const IMAGE_LIMIT = 1000;
 
-const ALLOWED_HASHTAGS = new Set(['art', 'digitalart', 'fanart', 'illustration', 'drawing', 'oc', 'photography', 'artist', 'traditionalart', 'blender', 'render', 'c4d', '3d', '3dart', 'procreate', 'sketch', 'artist']);
+const PRESET_HASHTAGS = {
+    'art': new Set(['art', 'digitalart', 'fanart', 'illustration', 'drawing', 'oc', 'photography', 
+                    'artist', 'traditionalart', 'blender', 'render', 'c4d', '3d', '3dart', 
+                    'procreate', 'sketch', 'artist'])
+};
+
+function getUrlParameters() {
+    const params = new URLSearchParams(window.location.search);
+    const preset = params.get('preset')?.toLowerCase();
+    const customTags = params.get('tags')?.toLowerCase();
+    
+    let activeHashtags = new Set();
+    
+    if (preset && PRESET_HASHTAGS[preset]) {
+        activeHashtags = new Set([...PRESET_HASHTAGS[preset]]);
+    }
+    
+    if (customTags) {
+        const customTagsArray = customTags.split(',').map(tag => tag.trim());
+        customTagsArray.forEach(tag => activeHashtags.add(tag));
+    }
+    
+    return activeHashtags;
+}
+
+const ALLOWED_HASHTAGS = getUrlParameters();
 
 function hasAllowedHashtag(facets) {
+    if (ALLOWED_HASHTAGS.size === 0) return true;
+    
     if (!facets) return false;
     
     for (const facet of facets) {
